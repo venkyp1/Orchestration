@@ -1,0 +1,286 @@
+                            Create a Kubernetes cluster in AWS using EC2 instances
+                            ------------------------------------------------------
+
+
+References:
+
+ Setting up a secured cluster as part of CI:
+
+  https://medium.com/slalom-build/how-to-build-a-secure-by-default-kubernetes-cluster-with-a-basic-ci-cd-pipeline-on-aws-ebfe0da1c7c9
+
+ AWS setup:
+  https://github.com/kubernetes/kops/blob/master/docs/getting_started/aws.md
+
+Note:
+
+If you are using Kops 1.6.2 or later, then DNS configuration is optional. Instead, a gossip
+-based cluster can be easily created. The only requirement to trigger this is to have the cluster 
+name end with .k8s.local. If a gossip-based cluster is created then you can skip this section.
+
+
+
+Steps:
+======
+
+1. AWS account - Create a new user 'kops' for this deployment
+   - Make sure to have to have FULL access for: EC2, S3, Route53, VPC, IAM
+   - Verify the username:   aws iam list-users
+   - Make sure the deployment zones are identified.
+   - set the KOPS env variables
+
+
+2. Install awscli, kops
+   - Run: aws configure
+
+   Check the tools:
+
+      ➜  which kops
+      /usr/local/bin/kops
+      ➜  which kubectl
+      /usr/local/bin/kubectl
+      ➜  
+
+3.  Init env variables with clustername, zones  and S3 bucket:
+
+      export KOPS_CLUSTER_NAME="dev.venky.com"
+      export S3_BUCKET="dev-venky-com"
+     
+      # Needs a bucket for kops to store configuration files
+      export KOPS_STATE_STORE="s3://${S3_BUCKET}"
+      export ZONES=${MASTER_ZONES:-"us-west-1a"}
+      export REGION=us-west-1
+      export INSTALL_AMI="ami-04b9e92b5572fa0d1"
+
+4.   Create a S3 bucket:
+
+        # zone used is us-west-1. Keep it this way. It may not matter with S3
+        aws s3api create-bucket --bucket ${S3_BUCKET} --region ${REGION}
+
+        # This helps rollback the cluster if needed
+        aws s3api put-bucket-versioning --bucket ${S3_BUCKET} --versioning-configuration Status=Enabled
+
+        # aws s3 mb ${KOPS_STATE_STORE}
+        # aws s3 ls
+
+To encrypt the bucket:
+aws s3api put-bucket-encryption --bucket ${S3_BUCKET} --server-side-encryption-configuration ‘{“Rules”:[{“ApplyServerSideEncryptionByDefault”:{“SSEAlgorithm”:”AES256"}}]}’
+
+
+
+
+5.  Setup route53 domain:
+
+    Note: Create this on the AWS console and add a VPC (default or ypur own) instead of the below command.
+
+     ➜  aws route53 list-hosted-zones
+     ➜  aws route53 create-hosted-zone --name ${KOPS_CLUSTER_NAME} --caller-reference 3
+       Note: If the above command fails with reference already exists, change the number
+
+      Note the name servers(NS):
+
+|+---------------------------------------------------------------------------------------------+||
+|||  ns-1333.awsdns-38.org                                                                      |||
+|||  ns-107.awsdns-13.com                                                                       |||
+|||  ns-718.awsdns-25.net                                                                       |||
+|||  ns-1603.awsdns-08.co.uk                                                                    |||
+||+---------------------------------------------------------------------------------------------+||
+
+6.  Make sure the nameserver(s) are accessible.
+
+    ➜ dig NS ns-354.awsdns-44.com
+    ➜ ping ns-354.awsdns-44.com
+   
+
+7.  Create the Kubernetes cluster:
+
+    Dry run:
+    --------
+  
+# using : --dns private
+#    ➜ kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub --dns private --dns-zone ${KOPS_CLUSTER_NAME} --dry-run --output json
+
+#using[Default] : --dns public 
+    ➜ kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub  --dns-zone ${KOPS_CLUSTER_NAME} --dry-run --output json
+
+# No DNS
+    ➜ kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub  --dry-run --output json
+
+
+Add networking if needed:
+-------------------------
+# USING:    --networking calico
+
+kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub --dns private --dns-zone ${KOPS_CLUSTER_NAME} --networking calico --dry-run --output json
+
+# USING:    --networking weave   # https://github.com/weaveworks/weave
+
+kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub --dns private --dns-zone ${KOPS_CLUSTER_NAME} --networking weave --dry-run --output json
+
+
+Authorization:
+--authorization RBAC
+
+Other:
+
+--topology private
+
+
+    To create the config file:
+    --------------------------
+
+   # --image ${INSTALL_AMI} not working
+
+    ➜  kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub --dns private  
+
+    Load the config file to add a load balancer: [if missing]
+
+    kops edit cluster 
+
+    spec:
+  api:
+    loadBalancer:
+      sslCertificate: arn:aws:acm:ap-south-1:123403005789:certificate/1a2b3c54-b001–12fg-9h33-f98f7f65432d
+      type: Public
+  authorization:
+    rbac: {}
+
+
+    To create the cluster: [worked]
+
+    ➜ kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub --dns private  --yes
+
+
+# With out using route53
+    ➜ kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro --master-zones "us-west-1a"  --node-size=t2.micro --node-count 2 --zones "us-west-1a" --ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub  --yes
+
+
+      Note: use of SSH public key is deprecates.
+            instead use "kops create secret"
+
+SSH Access:
+
+To be able to access the cluster nodes via ssh, we need to add a key. Use the following command to add an 
+existing key to be used with the cluster
+➜  kops create secret --name ${KOPS_CLUSTER_NAME} sshpublickey admin -i /Users/venky/mywork/AWS/kops-aws-key.pub
+
+
+8.  Validate the cluster:
+
+      kops validate cluster 
+      kubectl config view
+
+
+8a. To get the current configuration file in YAML format:
+
+    kops get  -o yaml > ${KOPS_CLUSTER_NAME}.yaml
+
+
+9.  Update cluster in dry run mode:
+
+      Dry run:
+      kops update cluster --name ${KOPS_CLUSTER_NAME}
+
+      To Update: [--yes is needed]
+      kops update cluster --name ${KOPS_CLUSTER_NAME} --yes
+
+
+10.  To get the current config in a YAML:
+
+       kops edit cluster  # Save this to a local file
+
+
+11.  To access Kubernetes dashboard:
+
+      https://ramhiser.com/post/2018-05-20-setting-up-a-kubernetes-cluster-on-aws-in-5-minutes/
+      
+      Video: https://www.youtube.com/watch?time_continue=9&v=xe9twgEs5O8&feature=emb_logo
+
+      To access the dashbord,
+
+           kubectl proxy
+
+           To login:
+             Username : admin
+             To get password: run: kops get secrets kube --type secret -oplaintext
+
+           To get a token :  kops get secrets admin --type secret -oplaintext
+
+
+12.   Update Cluster:
+
+       Tool: helm
+
+         To install on Mac:
+           brew install kubernetes-helm
+         [or]
+           brew upgrade kubernetes-helm
+
+         Ref: https://www.youtube.com/watch?v=ayDstz50_44
+
+
+13.   Delete Cluster: [--yes is required]
+
+      kops delete cluster --name ${KOPS_CLUSTER_NAME} --yes
+      aws s3 rm ${KOPS_STATE_STORE}
+      aws route53 delete-hosted-zone --id ${KOPS_CLUSTER_NAME} 
+      aws s3 ls
+      aws route53 list-hosted-zones
+      kubectl config view
+
+14.   Misc Commands:
+
+       kops export 
+
+       # Get the config details in a file
+       kops export kubecfg --kubeconfig ./kubeconfig.yaml
+       
+       kubectl config view
+       
+       kubectl cluster-info
+       
+       kubectl cluster-info dump
+
+15.    Debugging Kubernetes cluster:
+        https://akomljen.com/learn-how-to-troubleshoot-applications-running-on-kubernetes/
+
+
+
+Regions:
+
+aws ec2 describe-regions --all-regions
+
+Bucket:
+
+If the bucket fails, use the end point URL:
+aws s3 mb ${KOPS_STATE_STORE} --endpoint-url https://s3.us-west-1.amazonaws.com
+
+Getting the location of a bucket:
+aws s3api get-bucket-location --bucket BUCKET_NAME
+
+➜ aws s3api get-bucket-location --bucket venky-com
+--------------------------------
+|       GetBucketLocation      |
++---------------------+--------+
+|  LocationConstraint |  None  |
++---------------------+--------+
+
+
+
+
+
+
+Try this:
+
+kops create cluster --cloud aws --master-size t2.medium --master-count 3 --master-size=t2.micro \
+--master-zones "us-west-1a"  \
+--node-size=t2.micro \
+--node-count 2 \
+--zones "us-west-1a" \
+--subnets subnet-0b924447791af9c45 \
+--os-dns-servers a, b, c
+--networking weave \
+--vpc vpc-05e29eb4d0b8cc574 \
+--v 4 \
+--ssh-public-key /Users/venky/mywork/AWS/kops-aws-key.pub  \
+--image ${INSTALL_AMI} \
+--yes
