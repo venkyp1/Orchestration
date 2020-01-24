@@ -96,4 +96,17 @@ accessible to your local or another host.
 ```
 
 
+### Deploying your own helm chart
+```
+  See venky-chart directory for a simple nginx image based chart.
+  If you have your own docker image in docker registry, create similar config files to get it deployed.
+
+  Commands:
+
+  helm install venky-chart/ --generate-name
+  kubectl get deployments
+  kubectl get pods -A
+  kubectl get pods -A -o wide
+ ``` 
+
 
