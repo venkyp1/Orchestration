@@ -100,8 +100,10 @@ kops create cluster \
 ### To change configuration, 
 
 ```
+kops edit cluster
 
-Add load balancer if needed
+Add load balancer if needed,
+
     spec:
   api:
     loadBalancer:
@@ -110,8 +112,6 @@ Add load balancer if needed
   authorization:
     rbac: {}
     
-
-kops edit cluster
 
 ```
 
@@ -143,12 +143,19 @@ Use: helm charts
 ### To delete the cluster [--yes is required]
 
 ```
-      kops delete cluster --name ${KOPS_CLUSTER_NAME} --yes
-      aws s3 rm ${KOPS_STATE_STORE}
-      aws route53 delete-hosted-zone --id ${KOPS_CLUSTER_NAME}
-      aws s3 ls
-      aws route53 list-hosted-zones
-      kubectl config view
+ kops delete cluster --name ${KOPS_CLUSTER_NAME} --yes
+ aws s3 rm ${KOPS_STATE_STORE}
+ aws s3 ls
+ 
+ # If route53 was configured,
+    aws route53 delete-hosted-zone --id ${KOPS_CLUSTER_NAME}
+```
+
+ ### Verify
+ 
+ ```
+ kubectl cluster-info
+ kubectl config view
  ```
 
 
