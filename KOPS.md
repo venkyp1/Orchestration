@@ -42,15 +42,15 @@ AWS account - Create a new user 'kopsuser' for this deployment
  ###  Create a S3 bucket
  
  ```
-
-        # zone used is us-west-1. Keep it this way. It may not matter with S3
+        aws s3 mb ${KOPS_STATE_STORE}
+        aws s3 ls
+        
         aws s3api create-bucket --bucket ${S3_BUCKET} --region ${REGION}
 
         # This helps rollback the cluster if needed
         aws s3api put-bucket-versioning --bucket ${S3_BUCKET} --versioning-configuration Status=Enabled
 
-        # aws s3 mb ${KOPS_STATE_STORE}
-        # aws s3 ls
+
    ```
    
    #### Encrypt the S3 bucket if needed
