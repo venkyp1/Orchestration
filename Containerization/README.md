@@ -130,9 +130,9 @@ To check the repository:
 aws ecr describe-images --repository-name webapi --region us-east-2 --output json
 
 ```
+6. Create a 4 nodes Kubernetes cluster in AWS EKS
 
-
-6. Write a replication manifest file for deploying the docker image in a kubernetes cluster 
+7. Write a replication manifest file for deploying the docker image in a kubernetes cluster 
 
 ```
 Venky> kubectl apply -f webapi_rc.yaml
@@ -148,7 +148,8 @@ webapi-rc-deployment-s4fq7   1/1     Running   0          41s   192.168.53.215  
 Venky>
 
 ```
-7. Access the application using supported REST endpoint to verify its working.
+
+8. Access the application using supported REST endpoint to verify its working.
 
 ```
 
@@ -170,7 +171,7 @@ v1.0.0[ root@curl:/ ]$
 
 ```
 
-8. Clean up the resources
+9. Clean up the pods and rc
 
 kubectl delete -f webapi_rc.yaml
 kubectl delete pod curl
