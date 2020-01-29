@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: webapi-rc-deployment
+spec:
+  replicas: 4
+  selector:
+    app: webapi-rc-app
+    version: v1.0
+  template:
+    metadata:
+      labels:
+        app: webapi-rc-app
+        version: v1.0
+    spec:
+      containers:
+        - name: webapi-rc-app
+          image: 946775662303.dkr.ecr.us-east-2.amazonaws.com/webapi:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+
+# kubectl apply -y webapi_rc.yaml
+# kubectl expose rc webapi-rc-deployment --name=webapi-rc-svc --port=5000 --target-port=5000 --selector="app=webapi-rc-app"
