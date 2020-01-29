@@ -6,15 +6,16 @@ in a microservices platform. Kubernetes platform is used here for the demonstrat
 
 ### Steps:
 
-```
+
 1. Creat Docker image for the application
+```
      - Write a Dockerfile for the application 
      - Select and install a base OS image and tools needed
      - Assign a version
      - Dependencies - database or services needed for the application
      - Expose port(s) as needed
 
-```
+
 Venky> docker build . -t webapi:1.0 --no-cache
 Sending build context to Docker daemon   25.6kB
 Step 1/6 : FROM alpine
