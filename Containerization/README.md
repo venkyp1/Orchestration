@@ -167,7 +167,7 @@ PING 192.168.78.63 (192.168.78.63): 56 data bytes
 2 packets transmitted, 2 packets received, 0% packet loss
 round-trip min/avg/max = 0.350/0.388/0.426 ms
 [ root@curl:/ ]$ curl -s 192.168.78.63:5000/version
-v1.0.0[ root@curl:/ ]$
+v1.0.0[ root@curl:/ ]$        ** <===== SEE VERSION NUMBER FROM THE APP **
 
 ```
 
