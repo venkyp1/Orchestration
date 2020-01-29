@@ -173,5 +173,8 @@ v1.0.0[ root@curl:/ ]$
 
 9. Clean up the pods and rc
 
+```
+
 kubectl delete -f webapi_rc.yaml
+```
 kubectl delete pod curl
