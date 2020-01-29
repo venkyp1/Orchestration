@@ -8,12 +8,13 @@ in a microservices platform. Kubernetes platform is used here for the demonstrat
 
 
 1. Creat Docker image for the application
-```
      - Write a Dockerfile for the application 
      - Select and install a base OS image and tools needed
      - Assign a version
      - Dependencies - database or services needed for the application
      - Expose port(s) as needed
+```
+  See: Dockerfile
 
 
 Venky> docker build . -t webapi:1.0 --no-cache
