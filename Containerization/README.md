@@ -6,15 +6,16 @@ in a microservices platform. Kubernetes platform is used here for the demonstrat
 
 ### Steps:
 
-```
+
 1. Creat Docker image for the application
+```
      - Write a Dockerfile for the application 
      - Select and install a base OS image and tools needed
      - Assign a version
      - Dependencies - database or services needed for the application
      - Expose port(s) as needed
 
-```
+
 Venky> docker build . -t webapi:1.0 --no-cache
 Sending build context to Docker daemon   25.6kB
 Step 1/6 : FROM alpine
@@ -129,9 +130,9 @@ To check the repository:
 aws ecr describe-images --repository-name webapi --region us-east-2 --output json
 
 ```
+6. Create a 4 nodes Kubernetes cluster in AWS EKS
 
-
-6. Write a replication manifest file for deploying the docker image in a kubernetes cluster 
+7. Write a replication manifest file for deploying the docker image in a kubernetes cluster 
 
 ```
 Venky> kubectl apply -f webapi_rc.yaml
@@ -147,7 +148,8 @@ webapi-rc-deployment-s4fq7   1/1     Running   0          41s   192.168.53.215  
 Venky>
 
 ```
-7. Access the application using supported REST endpoint to verify its working.
+
+8. Access the application using supported REST endpoint to verify its working.
 
 ```
 
@@ -165,11 +167,13 @@ PING 192.168.78.63 (192.168.78.63): 56 data bytes
 2 packets transmitted, 2 packets received, 0% packet loss
 round-trip min/avg/max = 0.350/0.388/0.426 ms
 [ root@curl:/ ]$ curl -s 192.168.78.63:5000/version
-v1.0.0[ root@curl:/ ]$
+v1.0.0[ root@curl:/ ]$        **<===== SEE VERSION NUMBER FROM THE APP**
 
 ```
 
-8. Clean up the resources
+9. Clean up the pods and rc
 
+```
 kubectl delete -f webapi_rc.yaml
 kubectl delete pod curl
+```
