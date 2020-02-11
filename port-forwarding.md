@@ -1,3 +1,5 @@
+## This example uses a POD which exposes port 5000. This is a sample. You can use the same approach for application POD.
+
 ### Accessing a POD's port using port-forwarding
 
 ```
