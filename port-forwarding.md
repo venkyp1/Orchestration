@@ -25,9 +25,12 @@ Venky>
 
 Forward Pod's PORT to the local host:
 
+```
 Venky> kubectl --namespace default port-forward webapi-deployment-77799fd75f-9cwgx 5000
 Forwarding from 127.0.0.1:5000 -> 5000
 Forwarding from [::1]:5000 -> 5000
+
+```
 
 On another window, access the REST API from the POD:
 
