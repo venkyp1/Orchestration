@@ -1,6 +1,6 @@
-## There are different ways secrets can be stored and used in Kubernetes cluster.
+## There are different ways secrets can be stored and used in Kubernetes cluster. Secrets are sensitive data.
 
-### This tutorial shows a simple key-value approach for storing secrets
+### This tutorial shows a simple key-value approach for storing secrets. Secrets are stored in base64 form.
 
 ### Data:
 ```
