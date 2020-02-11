@@ -40,7 +40,7 @@ Data
 password.txt:  10 bytes
 users.txt:     5 bytes
 Venky>
-
+```
 ### Get the secrets in YAML format.
 
 ```
@@ -65,7 +65,7 @@ Venky>
 
 ```
 Venky> echo "c2lsbHlhZG1pbg==" | base64 --decode
-sillyadmin                                                                                                          Venky>
+sillyadmin                                                                                                         
 Venky> echo "YWRtaW4=" | base64 --decode
 admin
 Venky>
