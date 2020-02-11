@@ -97,6 +97,8 @@ Handling connection for 6443
 ```
 https://127.0.0.1:6443/#!/login
 
+Select 'token' option. Paste the token and click 'SIGN IN'
+
 ```
 
   
