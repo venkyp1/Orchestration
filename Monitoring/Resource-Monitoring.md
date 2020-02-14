@@ -45,6 +45,29 @@ Venky> kubectl create namespace monitoring
 namespace/monitoring created
 Venky>
 
+Before deploying the metrics-server, make changes to its manifest file.
+
+Venky> helm show values stable/metrics-server > metrics-server.values
+
+Make the following changes in the file:
+
+Enable the host network:
+
+hostNetwork:
+  # Specifies if metrics-server should be started in hostNetwork mode.
+  #
+  # You would require this enabled if you use alternate overlay networking for pods and
+  # API server unable to communicate with metrics-server. As an example, this is required
+  # if you use Weave network on EKS
+  enabled: true
+
+Add insecure TLS access as shown below:
+
+args:
+- --kubelet-insecure-tls
+
+Save and close the file.
+
 Venky> helm install  metrics-server stable/metrics-server --namespace monitoring --values metrics-server.values
 NAME: metrics-server
 LAST DEPLOYED: Thu Feb 13 19:32:27 2020
@@ -93,6 +116,7 @@ Venky> kubectl get pods -n monitoring
 NAME                              READY   STATUS    RESTARTS   AGE
 metrics-server-57b898595c-qbpdd   1/1     Running   0          2m6s
 Venky> 
+```
 
 ## Time to verify the metrics-server stats
 
