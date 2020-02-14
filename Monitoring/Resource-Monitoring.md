@@ -93,6 +93,7 @@ Venky> kubectl get pods -n monitoring
 NAME                              READY   STATUS    RESTARTS   AGE
 metrics-server-57b898595c-qbpdd   1/1     Running   0          2m6s
 Venky> 
+```
 
 ## Time to verify the metrics-server stats
 
