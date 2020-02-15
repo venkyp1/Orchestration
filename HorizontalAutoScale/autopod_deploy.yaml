@@ -1,0 +1,29 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: autopod-deployment
+  labels:
+     app: autopod
+spec:
+#  replicas: 1 
+  selector:
+    matchLabels:
+      app: autopod
+  template:
+    metadata:
+       labels:
+         app: autopod
+         version: v1.0
+    spec:
+      containers:
+       - name: autopod
+         image: 946775662303.dkr.ecr.us-east-2.amazonaws.com/autopod:1.0
+         imagePullPolicy: Always
+         ports:
+          - containerPort: 5000
+            protocol: TCP
+         resources:           # THIS IS NEEDED FOR HPA
+          limits:
+            cpu: 200m
+          requests:
+            cpu: 100m
